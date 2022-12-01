@@ -1,5 +1,5 @@
+import type { Reader } from "https://deno.land/std@0.167.0/io/types.d.ts";
 import { readLines } from "https://deno.land/std@0.167.0/io/mod.ts";
-import { type Reader } from "https://deno.land/std@0.167.0/io/types.d.ts";
 import { maxOf } from "https://deno.land/std@0.167.0/collections/max_of.ts";
 import { Direction, SortService } from "https://deno.land/x/sort@v1.1.1/mod.ts";
 
@@ -13,9 +13,9 @@ export async function part2(reader: Reader): Promise<number> {
 }
 
 async function readElves(reader: Reader): Promise<number[]> {
-  let elves: number[] = [];
-  let total: number = 0;
-  for await (let line of readLines(reader)) {
+  const elves: number[] = [];
+  let total = 0;
+  for await (const line of readLines(reader)) {
     if (line === "") {
       elves.push(total);
       total = 0;

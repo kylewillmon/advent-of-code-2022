@@ -1,8 +1,9 @@
-import { part1, part2 } from "./main.ts";
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { StringReader } from "https://deno.land/std@0.167.0/io/mod.ts";
 
-let example = `1000
+import { part1, part2 } from "./main.ts";
+
+const example = `1000
 2000
 3000
 
