@@ -1,5 +1,4 @@
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
-import { StringReader } from "https://deno.land/std@0.167.0/io/mod.ts";
 
 import { part1, part2 } from "./main.ts";
 
@@ -19,10 +18,10 @@ const example = `1000
 10000
 `;
 
-Deno.test("part1 example", async () => {
-  assertEquals(await part1(new StringReader(example)), 24000);
+Deno.test("part1 example", () => {
+  assertEquals(part1(example), 24000);
 });
 
-Deno.test("part2 example", async () => {
-  assertEquals(await part2(new StringReader(example)), 45000);
+Deno.test("part2 example", () => {
+  assertEquals(part2(example), 45000);
 });

@@ -1,21 +1,18 @@
-import type { Reader } from "https://deno.land/std@0.167.0/io/types.d.ts";
-import { readLines } from "https://deno.land/std@0.167.0/io/mod.ts";
-import { maxOf } from "https://deno.land/std@0.167.0/collections/max_of.ts";
-import { Direction, SortService } from "https://deno.land/x/sort@v1.1.1/mod.ts";
-
-export async function part1(reader: Reader): Promise<number> {
-  return maxOf(await readElves(reader), (i) => i) as number;
+export function part1(input: string): number {
+  const elves = parseElves(input);
+  return elves.reduce((max, cur) => cur > max ? cur : max, 0);
 }
 
-export async function part2(reader: Reader): Promise<number> {
-  const elves = SortService.sort(await readElves(reader), Direction.DESCENDING);
-  return elves[0] + elves[1] + elves[2];
+export function part2(input: string): number {
+  const elves = parseElves(input);
+  elves.sort((a, b) => a - b);
+  return elves.pop()! + elves.pop()! + elves.pop()!;
 }
 
-async function readElves(reader: Reader): Promise<number[]> {
+function parseElves(input: string): number[] {
   const elves: number[] = [];
   let total = 0;
-  for await (const line of readLines(reader)) {
+  for (const line of input.split("\n")) {
     if (line === "") {
       elves.push(total);
       total = 0;
@@ -30,6 +27,9 @@ async function readElves(reader: Reader): Promise<number[]> {
 }
 
 if (import.meta.main) {
-  console.log("Part 1: ", await part1(await Deno.open("input.txt")));
-  console.log("Part 2: ", await part2(await Deno.open("input.txt")));
+  const input = await Deno.readTextFile(
+    new URL(import.meta.resolve("./input.txt")),
+  );
+  console.log("Part 1: ", part1(input));
+  console.log("Part 2: ", part2(input));
 }
