@@ -70,8 +70,9 @@ function getDays(lb: Leaderboard): Day[] {
 }
 
 function dateToString(ts: number): string {
-  const date = new Date(ts * 1000);
-  return date.toISOString();
+  // Puzzles are released in -0500, so might as well use that timezone here.
+  const date = new Date((ts - (5 * 60 * 60)) * 1000);
+  return date.toISOString().replace('T', ' ').replace('.000Z', '');
 }
 
 if (import.meta.main) {
