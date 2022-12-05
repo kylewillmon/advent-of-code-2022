@@ -1,0 +1,4 @@
+set dotenv-load
+
+show:
+  deno run -A main.ts
