@@ -8,7 +8,7 @@ const example = `2-4,6-8
 6-6,4-6
 2-6,4-8`;
 
-Deno.test(function day3Test() {
+Deno.test(function day4Test() {
   assertEquals(part1(example), 2);
   assertEquals(part2(example), 4);
 });
