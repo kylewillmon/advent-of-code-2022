@@ -34,8 +34,8 @@ class Move {
   constructor(line: string) {
     const match = line.match(/move (\d+) from (\d+) to (\d+)/)!;
     this.count = parseInt(match[1]);
-    this.from = parseInt(match[2])-1;
-    this.to = parseInt(match[3])-1;
+    this.from = parseInt(match[2]) - 1;
+    this.to = parseInt(match[3]) - 1;
   }
 }
 

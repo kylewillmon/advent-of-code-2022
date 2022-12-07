@@ -1,8 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.166.0/testing/asserts.ts";
 import { part1, part2 } from "./main.ts";
 
-const example = `mjqjpqmgbljsphdztnvjfqwrcgsmlb`;
-
 Deno.test(function day6Part1Test() {
   assertEquals(part1("mjqjpqmgbljsphdztnvjfqwrcgsmlb"), 7);
   assertEquals(part1("bvwbjplbgvbhsrlpgdmjqwftvncz"), 5);

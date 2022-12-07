@@ -22,7 +22,7 @@ class Range {
 
 function parseLine(line: string): [Range, Range] {
   const [a, b] = line.split(",");
-  return [new Range(a), new Range(b)]
+  return [new Range(a), new Range(b)];
 }
 
 export function part1(input: string): number {
@@ -30,7 +30,7 @@ export function part1(input: string): number {
   let count = 0;
   for (const line of lines) {
     const [a, b] = parseLine(line);
-    if(a.contains(b) || b.contains(a)) count += 1;
+    if (a.contains(b) || b.contains(a)) count += 1;
   }
   return count;
 }
@@ -40,7 +40,7 @@ export function part2(input: string): number {
   let count = 0;
   for (const line of lines) {
     const [a, b] = parseLine(line);
-    if(a.intersects(b)) count += 1;
+    if (a.intersects(b)) count += 1;
   }
   return count;
 }
