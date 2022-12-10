@@ -2,91 +2,98 @@ type Tree = {
   height: number;
 };
 
-function parseInput(input: string): Tree[][] {
-  const grid = input.split("\n").filter((i) => i.trim().length != 0);
-  const tree_grid: Tree[][] = [];
+type Location = {
+  row: number;
+  col: number;
+};
 
-  for (const row of grid) {
-    const tree_row: Tree[] = [];
-    for (let i = 0; i < row.length; i++) {
-      tree_row.push({ height: parseInt(row[i]) });
+class Grid<T> {
+  g: T[][];
+  constructor(g: T[][]) {
+    this.g = g;
+  }
+
+  get(loc: Location): T | null {
+    if (
+      loc.row >= 0 && loc.row < this.g.length && loc.col >= 0 &&
+      loc.col < this.g[0].length
+    ) {
+      return this.g[loc.row][loc.col];
     }
-    tree_grid.push(tree_row);
+    return null;
   }
-  return tree_grid;
+
+  forEach(callback: (element: T, loc: Location, grid: Grid<T>) => void) {
+    for (let row = 0; row < this.g.length; row++) {
+      for (let col = 0; col < this.g[row].length; col++) {
+        callback(this.g[row][col], { row, col }, this);
+      }
+    }
+  }
+
+  travelWhile(
+    start: Location,
+    change: Location,
+    callback: (element: T, loc: Location, grid: Grid<T>) => boolean,
+  ): boolean {
+    const cur = { ...start };
+    while (true) {
+      cur.row += change.row;
+      cur.col += change.col;
+      const val = this.get(cur);
+      if (!val) break;
+      if (!callback(val, cur, this)) return false;
+    }
+    return true;
+  }
 }
 
-function* betweens(
-  grid: Tree[][],
-  r: number,
-  c: number,
-  dr: number,
-  dc: number,
-): IterableIterator<Tree> {
-  let row = r + dr;
-  let col = c + dc;
-  while (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
-    yield grid[row][col];
-    row += dr;
-    col += dc;
-  }
-}
+const DIRS: Location[] = [
+  { row: 1, col: 0 },
+  { row: -1, col: 0 },
+  { row: 0, col: 1 },
+  { row: 0, col: -1 },
+];
 
-function every(
-  trees: IterableIterator<Tree>,
-  pred: (t: Tree) => boolean,
-): boolean {
-  for (const t of trees) {
-    if (!pred(t)) return false;
-  }
-  return true;
+function parseInput(input: string): Grid<Tree> {
+  return new Grid(
+    input
+      .split("\n")
+      .filter((i) => i.trim().length != 0)
+      .map((line) => Array.from(line, (t) => ({ height: Number(t) }))),
+  );
 }
 
 export function part1(input: string): number {
   const grid = parseInput(input);
   let count = 0;
-  for (let r = 0; r < grid.length; r++) {
-    for (let c = 0; c < grid[r].length; c++) {
-      const cur = grid[r][c];
-      const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
-      for (const [dr, dc] of dirs) {
-        if (every(betweens(grid, r, c, dr, dc), (t) => t.height < cur.height)) {
-          count += 1;
-          break;
-        }
+  grid.forEach((cur, loc, grid) => {
+    for (const dir of DIRS) {
+      if (grid.travelWhile(loc, dir, (t) => t.height < cur.height)) {
+        count += 1;
+        break;
       }
     }
-  }
+  });
 
-  return count;
-}
-
-function countTrees(trees: Iterable<Tree>, pred: (t: Tree) => boolean): number {
-  let count = 0;
-  for (const t of trees) {
-    count += 1;
-    if (!pred(t)) break;
-  }
   return count;
 }
 
 export function part2(input: string): number {
   const grid = parseInput(input);
   let max = 0;
-  for (let r = 0; r < grid.length; r++) {
-    for (let c = 0; c < grid[r].length; c++) {
-      const cur = grid[r][c];
-      const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
-      let val = 1;
-      for (const [dr, dc] of dirs) {
-        val *= countTrees(
-          betweens(grid, r, c, dr, dc),
-          (t) => t.height < cur.height,
-        );
-      }
-      if (val > max) max = val;
+  grid.forEach((cur, loc, grid) => {
+    let val = 1;
+    for (const dir of DIRS) {
+      let count = 0;
+      grid.travelWhile(loc, dir, (t) => {
+        count += 1;
+        return t.height < cur.height;
+      });
+      val *= count;
     }
-  }
+    max = Math.max(val, max);
+  });
 
   return max;
 }
