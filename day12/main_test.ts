@@ -9,5 +9,5 @@ abdefghi`;
 
 Deno.test(function day12Test() {
   assertEquals(part1(example), 31);
-  assertEquals(part2(example), 0);
+  assertEquals(part2(example), 29);
 });

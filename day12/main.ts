@@ -82,7 +82,7 @@ export function part1(input: string): number | undefined {
   grid.get(end)!.minSteps = 0;
 
   let maxCount = grid.g.length * (grid.g[0].length);
-  while (grid.get(start)!.minSteps == undefined && maxCount-->0) {
+  while (grid.get(start)!.minSteps == undefined && maxCount-- > 0) {
     grid.forEach((v, l, grid) => {
       if (v.minSteps == undefined) return;
       grid.forNeighbors(l, (nv) => {
@@ -98,8 +98,32 @@ export function part1(input: string): number | undefined {
   return grid.get(start)!.minSteps;
 }
 
-export function part2(input: string): number {
-  return 0;
+export function part2(input: string): number | undefined {
+  const [grid, , end] = parseInput(input);
+  grid.get(end)!.minSteps = 0;
+
+  const maxCount = grid.g.length * (grid.g[0].length);
+  for (let i = 0; i < maxCount; i++) {
+    grid.forEach((v, l, grid) => {
+      if (v.minSteps == undefined) return;
+      grid.forNeighbors(l, (nv) => {
+        if (nv.height >= v.height - 1) {
+          if (nv.minSteps == undefined || nv.minSteps > v.minSteps! + 1) {
+            nv.minSteps = v.minSteps! + 1;
+          }
+        }
+      });
+    });
+  }
+
+  let min = maxCount;
+  grid.forEach((v) => {
+    if (v.height == 0 && v.minSteps && v.minSteps < min) {
+      min = v.minSteps;
+    }
+  });
+
+  return min;
 }
 
 if (import.meta.main) {
