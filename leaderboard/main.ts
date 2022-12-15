@@ -88,7 +88,7 @@ function dec2022(date: Date): boolean {
 function formatter(date: Date, curDay: number): (string) => string {
   if(!dec2022(date)) return colors.gray;
   if(date.getUTCDate() == curDay) return colors.brightGreen;
-  if(date.getUTCDate() == curDay + 1) return colors.yellow;
+  if(date.getUTCDate() <= curDay + 3) return colors.yellow;
   return colors.gray;
 }
 
