@@ -1,3 +1,5 @@
+import * as colors from "https://deno.land/std@0.167.0/fmt/colors.ts";
+
 type Leaderboard = {
   event: string;
   owner_id: number;
@@ -20,8 +22,8 @@ type Leaderboard = {
 };
 
 type Day = {
-  part1: { name: string; time: number }[];
-  part2: { name: string; time: number }[];
+  part1: { name: string; time: Date }[];
+  part2: { name: string; time: Date }[];
 };
 
 function getParams(): [string, string] {
@@ -47,6 +49,11 @@ async function leaderboard(): Promise<Leaderboard> {
   });
 }
 
+function tsToDate(ts: number): Date {
+  // Puzzles are released in -0500, so might as well use that timezone here.
+  return new Date((ts - (5 * 60 * 60)) * 1000);
+}
+
 function getDays(lb: Leaderboard): Day[] {
   const days = [];
   for (let d = 1; d <= 25; d++) {
@@ -55,24 +62,34 @@ function getDays(lb: Leaderboard): Day[] {
       const name = user.name || `Anonymous user #${user.id}`;
       const p1 = user.completion_day_level[`${d}`]?.["1"]?.get_star_ts;
       if (p1) {
-        day.part1.push({ name: name, time: p1 });
+        day.part1.push({ name: name, time: tsToDate(p1) });
       }
       const p2 = user.completion_day_level[`${d}`]?.["2"]?.get_star_ts;
       if (p2) {
-        day.part2.push({ name: name, time: p2 });
+        day.part2.push({ name: name, time: tsToDate(p2) });
       }
     }
-    day.part1.sort((a, b) => a.time - b.time);
-    day.part2.sort((a, b) => a.time - b.time);
+    day.part1.sort((a, b) => a.time.valueOf() - b.time.valueOf());
+    day.part2.sort((a, b) => a.time.valueOf() - b.time.valueOf());
     days.push(day);
   }
   return days;
 }
 
-function dateToString(ts: number): string {
+function dateToString(date: Date): string {
   // Puzzles are released in -0500, so might as well use that timezone here.
-  const date = new Date((ts - (5 * 60 * 60)) * 1000);
   return date.toISOString().replace("T", " ").replace(".000Z", "");
+}
+
+function dec2022(date: Date): boolean {
+  return date.getUTCFullYear() == 2022 && date.getUTCMonth() == 11
+}
+
+function formatter(date: Date, curDay: number): (string) => string {
+  if(!dec2022(date)) return colors.gray;
+  if(date.getUTCDate() == curDay) return colors.brightGreen;
+  if(date.getUTCDate() == curDay + 1) return colors.yellow;
+  return colors.gray;
 }
 
 if (import.meta.main) {
@@ -83,14 +100,16 @@ if (import.meta.main) {
     if (day.part1.length !== 0) {
       console.log(`Day ${d + 1}, Part 1:`);
       for (const res of day.part1) {
-        console.log(`  ${res.name.padEnd(25, " ")} ${dateToString(res.time)}`);
+        const fmt = formatter(res.time, d+1);
+        console.log(fmt(`  ${res.name.padEnd(25, " ")} ${dateToString(res.time)}`));
       }
       console.log();
     }
     if (day.part2.length !== 0) {
       console.log(`Day ${d + 1}, Part 2:`);
       for (const res of day.part2) {
-        console.log(`  ${res.name.padEnd(25, " ")} ${dateToString(res.time)}`);
+        const fmt = formatter(res.time, d+1);
+        console.log(fmt(`  ${res.name.padEnd(25, " ")} ${dateToString(res.time)}`));
       }
       console.log();
     }
