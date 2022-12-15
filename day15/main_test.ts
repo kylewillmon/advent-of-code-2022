@@ -18,5 +18,5 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3`;
 
 Deno.test(function day15Test() {
   assertEquals(part1(example, 10), 26);
-  assertEquals(part2(example), 0);
+  assertEquals(part2(example, [0, 20]), 56000011);
 });

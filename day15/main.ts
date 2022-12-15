@@ -35,6 +35,18 @@ function isSeen(sensors: Sensor[], loc: Location): boolean {
   return false;
 }
 
+function* outOfReach(sensor: Sensor): Generator<Location> {
+  const loc = sensor.loc;
+  const dist = manhattenDist(loc, sensor.beacon) + 1;
+  for (let i = 0; i < dist; i++) {
+    const j = dist - i;
+    yield [loc[0] + i, loc[1] - j];
+    yield [loc[0] - i, loc[1] + j];
+    yield [loc[0] + j, loc[1] + i];
+    yield [loc[0] - j, loc[1] - i];
+  }
+}
+
 export function part1(input: string, tgtRow: number): number {
   const sensors = input
     .split("\n")
@@ -58,8 +70,22 @@ export function part1(input: string, tgtRow: number): number {
   return count;
 }
 
-export function part2(input: string): number {
-  return 0;
+export function part2(input: string, bounds: [number, number]): number {
+  const sensors = input
+    .split("\n")
+    .filter((l) => l.trim() != "")
+    .map(parseSensor);
+  for (const s of sensors) {
+    for (const maybe of outOfReach(s)) {
+      if (
+        maybe.every((coord) => coord >= bounds[0] && coord <= bounds[1]) &&
+        !isSeen(sensors, maybe)
+      ) {
+        return maybe[0] * 4000000 + maybe[1];
+      }
+    }
+  }
+  throw new Error("No solution found");
 }
 
 if (import.meta.main) {
@@ -67,5 +93,5 @@ if (import.meta.main) {
     new URL(import.meta.resolve("./input.txt")),
   );
   console.log("Part 1: ", part1(input, 2000000));
-  console.log("Part 2: ", part2(input));
+  console.log("Part 2: ", part2(input, [0, 4000000]));
 }
