@@ -70,57 +70,107 @@ function minGraph(valves: Graph): Graph {
 }
 
 type State = {
-  cur: Valve;
-  minute: number;
-  openValves: string[];
+  minutes: number;
+  closedValves: string[];
   flowRate: number;
   pressure: number;
 };
 
-function search(valves: Graph, state: State): number {
-  let maxPressure = state.pressure + ((30 - state.minute) * state.flowRate);
-  for (const { target, cost } of state.cur.tunnels) {
-    if (state.openValves.includes(target)) continue;
+type Person = {
+  cur: Valve;
+  next: Valve;
+  time: number;
+};
 
-    const minute = state.minute + cost + 1;
-    if (minute < 30) {
+function search(valves: Graph, state: State, persons: Person[]): number {
+  persons = persons.map((p) => ({ ...p }));
+  const run = Math.min(state.minutes, ...persons.map((p) => p.time));
+  if (run > 0) {
+    state.minutes -= run;
+    state.pressure += state.flowRate * run;
+    for (const p of persons) {
+      p.time -= run;
+      if (p.time == 0) {
+        p.cur = p.next;
+        state.flowRate += p.cur.rate;
+        state.closedValves.splice(
+          state.closedValves.findIndex((v) => v == p.cur.name)!,
+          1,
+        );
+      }
+    }
+  }
+
+  let maxPressure = state.pressure + (state.minutes * state.flowRate);
+  for (const p of persons) {
+    if (p.time != 0) {
+      maxPressure += p.next.rate * (state.minutes - p.time);
+    }
+  }
+
+  const pIdx = persons.findIndex((p) => p.time == 0)!;
+  const p = { ...persons[pIdx] };
+  persons.splice(pIdx, 1);
+
+  for (const target of state.closedValves) {
+    if (persons.find((p) => p.next.name == target)) continue;
+    const cost = p.cur.tunnels.find((t) => t.target == target)!.cost;
+    const toOpen = cost + 1;
+    if (state.minutes - toOpen > 0) {
       const v = valves.get(target)!;
-      const pressure = state.pressure +
-        ((minute - state.minute) * state.flowRate);
-
-      const openValves = [target, ...state.openValves];
+      p.next = v;
+      p.time = toOpen;
 
       const newState = {
-        cur: v,
-        minute,
-        openValves,
-        flowRate: state.flowRate + v.rate,
-        pressure,
+        minutes: state.minutes,
+        closedValves: [...state.closedValves],
+        flowRate: state.flowRate,
+        pressure: state.pressure,
       };
 
-      maxPressure = Math.max(maxPressure, search(valves, newState));
+      const newPersons = persons.map((p) => ({ ...p }));
+      newPersons.push(p);
+
+      const pressure = search(valves, newState, newPersons);
+      if (pressure > maxPressure) {
+        maxPressure = pressure;
+      }
     }
   }
   return maxPressure;
 }
 
-function searchGraph(valves: Graph): number {
+function searchGraph(
+  valves: Graph,
+  minutes: number,
+  numPersons: number,
+): number {
+  const persons = [];
+  for (let i = 0; i < numPersons; i++) {
+    persons.push({
+      cur: valves.get("AA")!,
+      next: valves.get("AA")!,
+      time: 0,
+    });
+  }
+
   return search(valves, {
-    cur: valves.get("AA")!,
-    minute: 0,
-    openValves: [],
+    minutes,
+    closedValves: [...valves.values()]
+      .map((v) => v.name).filter((v) => v != "AA"),
     flowRate: 0,
     pressure: 0,
-  });
+  }, persons);
 }
 
 export function part1(input: string): number {
   const valves = minGraph(parseInput(input));
-  return searchGraph(valves);
+  return searchGraph(valves, 30, 1);
 }
 
 export function part2(input: string): number {
-  return 0;
+  const valves = minGraph(parseInput(input));
+  return searchGraph(valves, 26, 2);
 }
 
 if (import.meta.main) {
