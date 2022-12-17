@@ -38,33 +38,47 @@ const ROCKS = [
 ];
 
 class Tower {
-  public data: number[];
+  public data: Uint8Array;
+  public offset: number;
+  public height: number;
   public jet: number;
   constructor(public jets: string) {
-    this.data = [];
+    this.data = new Uint8Array(32768);
+    this.height = 0;
+    this.offset = 0;
     this.jet = 0;
   }
-  height() {
-    return this.data.length;
+  totalHeight() {
+    return this.offset + this.height;
   }
 
   settle(r: Rock, height: number) {
     for (let i = 0; i < r.length; i++) {
-      while (this.height() <= height + i) this.data.push(0);
+      while (this.height <= height + i) {
+        this.data[this.height] = 0;
+        this.height++;
+      }
       this.data[height + i] |= r[i];
+    }
+    if (this.height > 32000) {
+      const newHeight = 500;
+      const remove = this.height - newHeight;
+      this.data.copyWithin(0, remove, this.height);
+      this.height = newHeight;
+      this.offset += remove;
     }
   }
 
   conflicts(r: Rock, height: number): boolean {
     for (let i = 0; i < r.length; i++) {
-      if (height + i >= this.height()) return false;
+      if (height + i >= this.height) return false;
       if (this.data[height + i] & r[i]) return true;
     }
     return false;
   }
 
   dropRock(r: Rock) {
-    let height = this.height() + 3;
+    let height = this.height + 3;
     while (true) {
       const [advance, backtrack] = this.jets[this.jet] == "<"
         ? [blowLeft, blowRight]
@@ -99,11 +113,42 @@ export function part1(input: string): number {
 
     tower.dropRock(rock);
   }
-  return tower.height();
+  return tower.totalHeight();
 }
 
 export function part2(input: string): number {
-  return 0;
+  const tower = new Tower(input.trim());
+  const target = 1000000000000;
+  const memory: Map<number, [number, number]> = new Map();
+  let cur = 0;
+  for (; cur < 1000; cur++) {
+    const rock = [...ROCKS[cur % 5]];
+    tower.dropRock(rock);
+  }
+  let prev: number;
+  let prevHeight: number;
+  for (;; cur++) {
+    const key = tower.jet * 5 + (cur % 5);
+    const maybe = memory.get(key);
+    if (maybe) {
+      [prev, prevHeight] = maybe;
+      break;
+    }
+    memory.set(key, [cur, tower.totalHeight()]);
+    const rock = [...ROCKS[cur % 5]];
+    tower.dropRock(rock);
+  }
+  const rep = cur - prev;
+  const repHeight = tower.totalHeight() - prevHeight;
+
+  const reps = Math.floor((target - cur) / rep);
+  cur += reps * rep;
+  const addl = reps * repHeight;
+  for (; cur < target; cur++) {
+    const rock = [...ROCKS[cur % 5]];
+    tower.dropRock(rock);
+  }
+  return addl + tower.totalHeight();
 }
 
 if (import.meta.main) {

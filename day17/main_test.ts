@@ -5,5 +5,5 @@ const example = `>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>`;
 
 Deno.test(function day17Test() {
   assertEquals(part1(example), 3068);
-  assertEquals(part2(example), 0);
+  assertEquals(part2(example), 1514285714288);
 });
