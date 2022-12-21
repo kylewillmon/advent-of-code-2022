@@ -21,5 +21,5 @@ hmdt: 32
 
 Deno.test("example", () => {
   assertEquals(part1(example), 152);
-  assertEquals(part2(example), 0);
+  assertEquals(part2(example), 301);
 });
